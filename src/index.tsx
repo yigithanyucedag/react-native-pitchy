@@ -17,13 +17,24 @@ const Pitchy = NativeModules.Pitchy
       }
     );
 
-export function multiply(a: number, b: number): Promise<number> {
-  return Pitchy.multiply(a, b);
-}
-
+/**
+ * Detects the pitch of the audio data in the buffer.
+ * @param buf The audio data buffer.
+ * @param sampleRate The sample rate of the audio data.
+ * @returns A promise that resolves to the detected pitch in Hz.
+ */
 export function autoCorrelate(
-  buf: number[],
+  buf: ArrayLike<number>,
   sampleRate: number
 ): Promise<number> {
   return Pitchy.autoCorrelate(buf, sampleRate);
+}
+
+/**
+ * Calculates the volume of the audio data in the buffer.
+ * @param buf The audio data buffer.
+ * @returns A promise that resolves to the calculated volume in dB.
+ */
+export function calculateVolume(buf: ArrayLike<number>): Promise<number> {
+  return Pitchy.calculateVolume(buf);
 }

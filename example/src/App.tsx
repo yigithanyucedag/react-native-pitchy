@@ -6,8 +6,6 @@ export default function App() {
   const [result, setResult] = useState<number | undefined>();
 
   useEffect(() => {
-    // multiply(3, 7).then(setResult);
-    // 2048 length
     const data = new Array(2048)
       .fill(0)
       .map((_, i) => Math.sin((i / 2048) * Math.PI * 2 * 440));

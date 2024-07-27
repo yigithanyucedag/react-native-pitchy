@@ -8,11 +8,6 @@
 
 namespace pitchy
 {
-	double multiply(double a, double b)
-	{
-		return a * b;
-	}
-
 	double autoCorrelate(const std::vector<double> &buf, double sampleRate)
 	{
 		// Implements the ACF2+ algorithm
@@ -72,5 +67,18 @@ namespace pitchy
 			T0 = T0 - b / (2 * a);
 
 		return sampleRate / T0;
+	}
+
+	double calculateVolume(const std::vector<double> &buf)
+	{
+		// Calculate RMS (Root Mean Square)
+		double sumSquares = std::accumulate(buf.begin(), buf.end(), 0.0, [](double a, double b)
+											{ return a + b * b; });
+		double rms = std::sqrt(sumSquares / buf.size());
+
+		// Convert RMS to decibels
+		double decibels = 20 * std::log10(rms);
+
+		return decibels;
 	}
 }

@@ -10,15 +10,24 @@ npm install react-native-pitchy
 
 ## Usage
 
+### Autocorrelation
 
 ```js
-import { multiply } from 'react-native-pitchy';
+import { autoCorrelate } from 'react-native-pitchy';
 
-// ...
-
-const result = await multiply(3, 7);
+const audioBuffer = new Float32Array(4096); // Dummy audio buffer
+const sampleRate = 44100;
+const pitch = await autoCorrelate(audioBuffer, sampleRate); // returns the pitch in Hz
 ```
 
+### Get volume (dB)
+
+```js
+import { getVolume } from 'react-native-pitchy';
+
+const audioBuffer = new Float32Array(4096); // Dummy audio buffer
+const volume = await getVolume(audioBuffer); // returns the volume in dB
+```
 
 ## Contributing
 
@@ -27,7 +36,3 @@ See the [contributing guide](CONTRIBUTING.md) to learn how to contribute to the 
 ## License
 
 MIT
-
----
-
-Made with [create-react-native-library](https://github.com/callstack/react-native-builder-bob)

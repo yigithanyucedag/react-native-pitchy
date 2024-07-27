@@ -5,8 +5,8 @@
 
 namespace pitchy
 {
-  double multiply(double a, double b);
   double autoCorrelate(const std::vector<double> &buf, double sampleRate);
+  double calculateVolume(const std::vector<double> &buf);
 }
 
 #endif /* PITCHY_H */

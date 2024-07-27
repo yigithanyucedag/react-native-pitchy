@@ -12,12 +12,24 @@ class PitchyModule(reactContext: ReactApplicationContext) :
     return NAME
   }
 
-  // Example method
-  // See https://reactnative.dev/docs/native-modules-android
   @ReactMethod
-  fun multiply(a: Double, b: Double, promise: Promise) {
-    promise.resolve(a * b)
+  fun nativeAutoCorrelate(buf: DoubleArray, sampleRate: Double, promise: Promise) {
+    // Call native method
+    val result = autoCorrelate(buf, sampleRate)
+
+    // Resolve promise
+    promise.resolve(result)
   }
+
+  @ReactMethod
+  fun calculateVolume(buf: DoubleArray, promise: Promise) {
+    // Call native method
+    val result = calculateVolume(buf)
+
+    // Resolve promise
+    promise.resolve(result)
+  }
+
 
   companion object {
     const val NAME = "Pitchy"
