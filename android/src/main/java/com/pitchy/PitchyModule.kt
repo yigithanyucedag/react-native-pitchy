@@ -4,6 +4,7 @@ import com.facebook.react.bridge.ReactApplicationContext
 import com.facebook.react.bridge.ReactContextBaseJavaModule
 import com.facebook.react.bridge.ReactMethod
 import com.facebook.react.bridge.Promise
+import com.facebook.react.bridge.ReadableArray
 
 class PitchyModule(reactContext: ReactApplicationContext) :
   ReactContextBaseJavaModule(reactContext) {
@@ -13,25 +14,26 @@ class PitchyModule(reactContext: ReactApplicationContext) :
   }
 
   @ReactMethod
-  fun nativeAutoCorrelate(buf: DoubleArray, sampleRate: Double, promise: Promise) {
-    // Call native method
-    val result = autoCorrelate(buf, sampleRate)
-
-    // Resolve promise
-    promise.resolve(result)
+  fun autoCorrelate(buf: ReadableArray, sampleRate: Double, promise: Promise) {
+    val bufArray = buf.toArrayList().map { it as Double }.toDoubleArray()
+    val pitch = nativeAutoCorrelate(bufArray, sampleRate)
+    promise.resolve(pitch)
   }
 
   @ReactMethod
-  fun calculateVolume(buf: DoubleArray, promise: Promise) {
-    // Call native method
-    val result = calculateVolume(buf)
-
-    // Resolve promise
-    promise.resolve(result)
+  fun calculateVolume(buf: ReadableArray, promise: Promise) {
+    val bufArray = buf.toArrayList().map { it as Double }.toDoubleArray()
+    val volume = nativeCalculateVolume(bufArray)
+    promise.resolve(volume)
   }
 
+  private external fun nativeAutoCorrelate(buf: DoubleArray, sampleRate: Double): Double
+  private external fun nativeCalculateVolume(buf: DoubleArray): Double
 
   companion object {
     const val NAME = "Pitchy"
+    init {
+      System.loadLibrary("react-native-pitchy")
+    }
   }
 }

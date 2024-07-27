@@ -23,10 +23,10 @@ const pitch = await autoCorrelate(audioBuffer, sampleRate); // returns the pitch
 ### Get volume (dB)
 
 ```js
-import { getVolume } from 'react-native-pitchy';
+import { calculateVolume } from 'react-native-pitchy';
 
 const audioBuffer = new Float32Array(4096); // Dummy audio buffer
-const volume = await getVolume(audioBuffer); // returns the volume in dB
+const volume = await calculateVolume(audioBuffer); // returns the volume in dB
 ```
 
 ## Contributing
