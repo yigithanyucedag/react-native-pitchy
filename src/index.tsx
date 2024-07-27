@@ -20,3 +20,10 @@ const Pitchy = NativeModules.Pitchy
 export function multiply(a: number, b: number): Promise<number> {
   return Pitchy.multiply(a, b);
 }
+
+export function autoCorrelate(
+  buf: number[],
+  sampleRate: number
+): Promise<number> {
+  return Pitchy.autoCorrelate(buf, sampleRate);
+}

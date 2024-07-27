@@ -1,12 +1,17 @@
-import { useState, useEffect } from 'react';
-import { StyleSheet, View, Text } from 'react-native';
-import { multiply } from 'react-native-pitchy';
+import { useEffect, useState } from 'react';
+import { StyleSheet, Text, View } from 'react-native';
+import { autoCorrelate } from 'react-native-pitchy';
 
 export default function App() {
   const [result, setResult] = useState<number | undefined>();
 
   useEffect(() => {
-    multiply(3, 7).then(setResult);
+    // multiply(3, 7).then(setResult);
+    // 2048 length
+    const data = new Array(2048)
+      .fill(0)
+      .map((_, i) => Math.sin((i / 2048) * Math.PI * 2 * 440));
+    autoCorrelate(data, 44100).then(setResult);
   }, []);
 
   return (
