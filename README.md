@@ -10,7 +10,7 @@ npm install react-native-pitchy
 
 ## Usage
 
-### Autocorrelation
+### Get pitch (Hz)
 
 ```js
 import { autoCorrelate } from 'react-native-pitchy';
