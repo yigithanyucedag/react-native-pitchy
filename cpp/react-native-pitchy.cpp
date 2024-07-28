@@ -8,9 +8,13 @@
 
 namespace pitchy
 {
-	double autoCorrelate(const std::vector<double> &buf, double sampleRate)
+	double getVolumeDecibel(double rms)
 	{
-		// Implements the ACF2+ algorithm
+		return 20 * std::log10(rms);
+	}
+
+	double autoCorrelate(const std::vector<double> &buf, double sampleRate, double minVolume)
+	{
 		int SIZE = buf.size();
 		double rms = 0;
 
@@ -20,7 +24,8 @@ namespace pitchy
 			rms += val * val;
 		}
 		rms = std::sqrt(rms / SIZE);
-		if (rms < 0.01) // not enough signal
+		double decibel = getVolumeDecibel(rms);
+		if (decibel < minVolume)
 			return -1;
 
 		int r1 = 0, r2 = SIZE - 1;
@@ -69,16 +74,4 @@ namespace pitchy
 		return sampleRate / T0;
 	}
 
-	double calculateVolume(const std::vector<double> &buf)
-	{
-		// Calculate RMS (Root Mean Square)
-		double sumSquares = std::accumulate(buf.begin(), buf.end(), 0.0, [](double a, double b)
-											{ return a + b * b; });
-		double rms = std::sqrt(sumSquares / buf.size());
-
-		// Convert RMS to decibels
-		double decibels = 20 * std::log10(rms);
-
-		return decibels;
-	}
 }

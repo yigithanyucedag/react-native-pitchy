@@ -7,21 +7,16 @@
 #include <limits>
 
 extern "C" JNIEXPORT jdouble JNICALL
-Java_com_pitchy_PitchyModule_nativeAutoCorrelate(JNIEnv *env, jobject /* this */, jdoubleArray buf, jdouble sampleRate)
+Java_com_pitchy_PitchyModule_nativeAutoCorrelate(JNIEnv *env, jobject thiz, jshortArray buffer, jint sampleRate, jdouble minVolume)
 {
-    jsize len = env->GetArrayLength(buf);
-    jdouble *bufArray = env->GetDoubleArrayElements(buf, 0);
-    std::vector<double> vec(bufArray, bufArray + len);
-    env->ReleaseDoubleArrayElements(buf, bufArray, 0);
-    return pitchy::autoCorrelate(vec, sampleRate);
-}
+    // pitchy::autoCorrelate(const std::vector<double> &buf, double sampleRate, double minVolume)
+    // Convert jshortArray to std::vector<double>
+    jshort *buf = env->GetShortArrayElements(buffer, 0);
+    jsize size = env->GetArrayLength(buffer);
+    std::vector<double> vec(buf, buf + size);
+    env->ReleaseShortArrayElements(buffer, buf, 0);
 
-extern "C" JNIEXPORT jdouble JNICALL
-Java_com_pitchy_PitchyModule_nativeCalculateVolume(JNIEnv *env, jobject /* this */, jdoubleArray buf)
-{
-    jsize len = env->GetArrayLength(buf);
-    jdouble *bufArray = env->GetDoubleArrayElements(buf, 0);
-    std::vector<double> vec(bufArray, bufArray + len);
-    env->ReleaseDoubleArrayElements(buf, bufArray, 0);
-    return pitchy::calculateVolume(vec);
+    // Call pitchy::autoCorrelate
+    double result = pitchy::autoCorrelate(vec, sampleRate, minVolume);
+    return result;
 }

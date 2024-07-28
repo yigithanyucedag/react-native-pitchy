@@ -1,4 +1,4 @@
-import { NativeModules, Platform } from 'react-native';
+import { NativeModules, NativeEventEmitter, Platform } from 'react-native';
 
 const LINKING_ERROR =
   `The package 'react-native-pitchy' doesn't seem to be linked. Make sure: \n\n` +
@@ -6,7 +6,7 @@ const LINKING_ERROR =
   '- You rebuilt the app after installing the package\n' +
   '- You are not using Expo Go\n';
 
-const Pitchy = NativeModules.Pitchy
+const PitchyNativeModule = NativeModules.Pitchy
   ? NativeModules.Pitchy
   : new Proxy(
       {},
@@ -17,24 +17,51 @@ const Pitchy = NativeModules.Pitchy
       }
     );
 
-/**
- * Detects the pitch of the audio data in the buffer.
- * @param buf The audio data buffer.
- * @param sampleRate The sample rate of the audio data.
- * @returns A promise that resolves to the detected pitch in Hz.
- */
-export function autoCorrelate(
-  buf: ArrayLike<number>,
-  sampleRate: number
-): Promise<number> {
-  return Pitchy.autoCorrelate(buf, sampleRate);
-}
+const eventEmitter = new NativeEventEmitter(PitchyNativeModule);
 
-/**
- * Calculates the volume of the audio data in the buffer.
- * @param buf The audio data buffer.
- * @returns A promise that resolves to the calculated volume in dB.
- */
-export function calculateVolume(buf: ArrayLike<number>): Promise<number> {
-  return Pitchy.calculateVolume(buf);
-}
+export type PitchyAlgorithm = 'ACF2+';
+
+export type PitchyConfig = {
+  /**
+   * The size of the buffer used to record audio.
+   * @default 4096
+   */
+  bufferSize?: number;
+  /**
+   * The minimum volume required to start detecting pitch.
+   * @default 45
+   */
+  minVolume?: number;
+  /**
+   * The algorithm used to detect pitch.
+   * @default 'ACF2+'
+   */
+  algorithm?: PitchyAlgorithm;
+};
+
+export type PitchyEventCallback = ({ pitch }: { pitch: number }) => void;
+
+const Pitchy = {
+  init(config?: PitchyConfig) {
+    return PitchyNativeModule.init({
+      bufferSize: 4096,
+      minVolume: -60,
+      algorithm: 'ACF2+',
+      ...config,
+    });
+  },
+  start(): Promise<void> {
+    return PitchyNativeModule.start();
+  },
+  stop(): Promise<void> {
+    return PitchyNativeModule.stop();
+  },
+  isRecording(): Promise<boolean> {
+    return PitchyNativeModule.isRecording();
+  },
+  addListener(callback: PitchyEventCallback) {
+    return eventEmitter.addListener('onPitchDetected', callback);
+  },
+};
+
+export default Pitchy;

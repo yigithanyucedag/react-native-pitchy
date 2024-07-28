@@ -1,41 +1,84 @@
 #import "Pitchy.h"
+#import <AVFoundation/AVFoundation.h>
 
-@implementation Pitchy
-RCT_EXPORT_MODULE()
-
-// Method to expose autoCorrelate
-RCT_EXPORT_METHOD(autoCorrelate:(NSArray<NSNumber *> *)buf
-                  sampleRate:(double)sampleRate
-                  resolve:(RCTPromiseResolveBlock)resolve
-                  reject:(RCTPromiseRejectBlock)reject)
-{
-    // Convert NSArray<NSNumber *> to std::vector<double>
-    std::vector<double> cBuf;
-    for (NSNumber *num in buf) {
-        cBuf.push_back([num doubleValue]);
-    }
-
-    // Call the autoCorrelate function
-    double result = pitchy::autoCorrelate(cBuf, sampleRate);
-
-    resolve([NSNumber numberWithDouble:result]);
+@implementation Pitchy {
+    AVAudioEngine *audioEngine;
+    double sampleRate;
+    double minVolume;
+    BOOL isRecording;
+    BOOL isInitialized;
 }
 
-// Method to expose calculateVolume
-RCT_EXPORT_METHOD(calculateVolume:(NSArray<NSNumber *> *)buf
-                  resolve:(RCTPromiseResolveBlock)resolve
-                  reject:(RCTPromiseRejectBlock)reject)
-{
-    // Convert NSArray<NSNumber *> to std::vector<double>
-    std::vector<double> cBuf;
-    for (NSNumber *num in buf) {
-        cBuf.push_back([num doubleValue]);
+RCT_EXPORT_MODULE()
+
+- (NSArray<NSString *> *)supportedEvents {
+  return @[@"onPitchDetected"];
+}
+
+RCT_EXPORT_METHOD(init:(NSDictionary *)config) {
+    if (!isInitialized) {
+        audioEngine = [[AVAudioEngine alloc] init];
+        AVAudioInputNode *inputNode = [audioEngine inputNode];
+        
+        AVAudioFormat *format = [inputNode inputFormatForBus:0];
+        sampleRate = format.sampleRate;
+        minVolume = [config[@"minVolume"] doubleValue];
+
+        [inputNode installTapOnBus:0 bufferSize:[config[@"bufferSize"] unsignedIntValue] format:format block:^(AVAudioPCMBuffer * _Nonnull buffer, AVAudioTime * _Nonnull when) {
+            [self detectPitch:buffer];
+        }];
+
+        isInitialized = YES;
+    }
+}
+
+RCT_EXPORT_METHOD(isRecording:(RCTPromiseResolveBlock)resolve
+                  reject:(RCTPromiseRejectBlock)reject) {
+    resolve([NSNumber numberWithBool:isRecording]);
+}
+
+RCT_EXPORT_METHOD(start:(RCTPromiseResolveBlock)resolve
+                  reject:(RCTPromiseRejectBlock)reject) {
+    if (!isInitialized) {
+        reject(@"not_initialized", @"Pitchy module is not initialized", nil);
+        return;
     }
 
-    // Call the calculateVolume function
-    double result = pitchy::calculateVolume(cBuf);
+    if(isRecording){
+        reject(@"already_recording", @"Already recording", nil);
+        return;
+    }
 
-    resolve([NSNumber numberWithDouble:result]);
+    NSError *error = nil;
+    [audioEngine startAndReturnError:&error];
+    if (error) {
+        reject(@"start_error", @"Failed to start audio engine", error);
+    } else {
+        isRecording = YES;
+        resolve(@(YES));
+    }
+}
+
+RCT_EXPORT_METHOD(stop:(RCTPromiseResolveBlock)resolve
+                  reject:(RCTPromiseRejectBlock)reject) {
+                    
+    if (!isRecording) {
+        reject(@"not_recording", @"Not recording", nil);
+        return;
+    }
+
+    [audioEngine stop];
+    isRecording = NO;
+    resolve(@(YES));
+}
+
+- (void)detectPitch:(AVAudioPCMBuffer *)buffer {
+    float *channelData = buffer.floatChannelData[0];
+    std::vector<double> buf(channelData, channelData + buffer.frameLength);
+
+    double detectedPitch = pitchy::autoCorrelate(buf, sampleRate, minVolume);
+    
+    [self sendEventWithName:@"onPitchDetected" body:@{@"pitch": @(detectedPitch)}];
 }
 
 @end

@@ -4,12 +4,14 @@
 
 #ifdef RCT_NEW_ARCH_ENABLED
 #import "RNPitchySpec.h"
+#import <React/RCTEventEmitter.h>
 
-@interface Pitchy : NSObject <NativePitchySpec>
+@interface Pitchy : RCTEventEmitter <NativePitchySpec>
 #else
 #import <React/RCTBridgeModule.h>
+#import <React/RCTEventEmitter.h>
 
-@interface Pitchy : NSObject <RCTBridgeModule>
+@interface Pitchy : RCTEventEmitter <RCTBridgeModule>
 #endif
 
 @end
