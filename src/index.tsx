@@ -29,7 +29,7 @@ export type PitchyConfig = {
   bufferSize?: number;
   /**
    * The minimum volume required to start detecting pitch.
-   * @default 45
+   * @default -60
    */
   minVolume?: number;
   /**
