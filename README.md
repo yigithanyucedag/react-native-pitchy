@@ -99,7 +99,6 @@ Pitchy.isRecording().then((isRecording) => {
 
 ## Roadmap
 
-- [ ] Add support for Expo
 - [ ] Add FFT for ACF2+ algorithm (currently uses a naive implementation)
 - [ ] Add more pitch detection algorithms
 
