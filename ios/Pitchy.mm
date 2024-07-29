@@ -1,5 +1,6 @@
 #import "Pitchy.h"
 #import <AVFoundation/AVFoundation.h>
+#import <React/RCTLog.h>
 
 @implementation Pitchy {
     AVAudioEngine *audioEngine;
@@ -16,6 +17,10 @@ RCT_EXPORT_MODULE()
 }
 
 RCT_EXPORT_METHOD(init:(NSDictionary *)config) {
+    #if TARGET_IPHONE_SIMULATOR
+        RCTLogInfo(@"Pitchy module is not supported on the iOS simulator");
+        return;
+    #endif
     if (!isInitialized) {
         audioEngine = [[AVAudioEngine alloc] init];
         AVAudioInputNode *inputNode = [audioEngine inputNode];
@@ -27,6 +32,21 @@ RCT_EXPORT_METHOD(init:(NSDictionary *)config) {
         [inputNode installTapOnBus:0 bufferSize:[config[@"bufferSize"] unsignedIntValue] format:format block:^(AVAudioPCMBuffer * _Nonnull buffer, AVAudioTime * _Nonnull when) {
             [self detectPitch:buffer];
         }];
+
+        AVAudioSession *session = [AVAudioSession sharedInstance];
+        NSError *error = nil;
+        [session setCategory:AVAudioSessionCategoryPlayAndRecord
+                        mode:AVAudioSessionModeMeasurement
+                     options:AVAudioSessionCategoryOptionDefaultToSpeaker
+                       error:&error];
+        if (error) {
+            RCTLogError(@"Error setting AVAudioSession category: %@", error);
+        }
+        
+        [session setActive:YES error:&error];
+        if (error) {
+            RCTLogError(@"Error activating AVAudioSession: %@", error);
+        }
 
         isInitialized = YES;
     }
