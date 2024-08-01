@@ -1,20 +1,36 @@
 import { useEffect, useState } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
-import { autoCorrelate } from 'react-native-pitchy';
+import Pitchy from 'react-native-pitchy';
+
+import { useMicrophonePermission } from './hooks/use-microphone-permission';
 
 export default function App() {
-  const [result, setResult] = useState<number | undefined>();
+  const permissionGranted = useMicrophonePermission();
+
+  const [frequency, setFrequency] = useState<number | undefined>();
 
   useEffect(() => {
-    const data = new Array(2048)
-      .fill(0)
-      .map((_, i) => Math.sin((i / 2048) * Math.PI * 2 * 440));
-    autoCorrelate(data, 44100).then(setResult);
+    Pitchy.init({
+      minVolume: -45,
+    });
+    Pitchy.addListener((data) => {
+      setFrequency(data.pitch);
+    });
   }, []);
+
+  useEffect(() => {
+    if (!permissionGranted) return;
+
+    Pitchy.start();
+
+    return () => {
+      Pitchy.stop();
+    };
+  }, [permissionGranted]);
 
   return (
     <View style={styles.container}>
-      <Text>Result: {result}</Text>
+      <Text>Frequency: {frequency}</Text>
     </View>
   );
 }

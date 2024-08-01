@@ -18,6 +18,20 @@ npx pod-install
 
 3. **Rebuild your app** after installing the package.
 
+> On iOS simulators, pitch detection may not work as expected due to the **lack of microphone support**. Make sure to test on a real device.
+
+## Permissions
+
+Microphone permissions are **required for pitch detection** to work. Make sure to request the necessary permissions before starting pitch detection. You can use a library like [react-native-permissions](https://github.com/zoontek/react-native-permissions) to request permissions.
+
+### iOS
+
+`Microphone`
+
+### Android
+
+`RECORD_AUDIO`
+
 ## Usage
 
 1. Import the library:
@@ -99,8 +113,13 @@ Pitchy.isRecording().then((isRecording) => {
 
 ## Roadmap
 
+- [ ] Fix example app (permissions issue related to builder-bob)
 - [ ] Add FFT for ACF2+ algorithm (currently uses a naive implementation)
 - [ ] Add more pitch detection algorithms
+
+## Examples
+
+Check out the [example app](example) for a simple implementation of pitch detection using Pitchy.
 
 ## Contributing
 
